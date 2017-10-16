@@ -8,10 +8,9 @@ package com.parvez.JSOUP.HTML;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 /**
@@ -20,82 +19,83 @@ import org.jsoup.select.Elements;
  */
 public class HTML {
 
-    private static Matcher matcher;
-    private static final String DOMAIN_NAME_PATTERN
-            = "([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,15}";
-    private static Pattern patrn = Pattern.compile(DOMAIN_NAME_PATTERN);
-
-    public static String getDomainName(String url) {
-
-        String domainName = "";
-        matcher = patrn.matcher(url);
-
-        if (matcher.find()) {
-            domainName = matcher.group(0).toLowerCase().trim();
-        }
-
-        return domainName;
-    }
-
     public static void main(String[] args) {
 
         Document document;
         try {
-            String query = "Devoxx Morocco";
-            String url = "https://facebook.com";
+            String url = "https://www.oracle.com/index.html";
             document = Jsoup.connect(url).timeout(5000).get();
 
+            /*
+            If you're using Netbeans and if in console shows this message 
+            "this line is too long, please switch to wrapped mode to see the whole line"
+            Then press ctrl+r and the string/text will be unqrapped 
+             */
             String title = document.title();
             System.out.println("Title: " + title + "\n\n");
+
+            System.out.println("Read the whole body text");
+            String text = document.body().text();
+            System.out.println(text + "\n\n");
+
             Elements elements = document.getAllElements();
             System.out.println("ALl Elements...");
             System.out.println(elements + "\n\n\n");
 
             System.out.println("Get All Attributes by Style");
             Elements elements2 = document.getElementsByAttribute("style");
-            System.out.println(elements2);
+            System.out.println(elements2 + " \n\n");
 
             System.out.println("Get All Attributes value by Text");
-            Elements text = document.getElementsByAttributeValue("type", "text");
-            System.out.println(text + " \n\n");
+            Elements text2 = document.getElementsByAttributeValue("type", "text");
+            System.out.println(text2 + " \n\n");
 
             System.out.println("Meta informations: ");
             String description = document.select("meta[name=description]").first().attr("content");
-            System.out.println("Description : " + description + "\n\n");
 
+            System.out.println("Description : " + description + "\n\n");
             System.out.println("Get Keywords: ");
-            String keywords = document.select("meta[name=keywords]").first()
-                    .attr("content");
+
+            String keywords
+                    = document.select("meta[name=keywords]").first()
+                            .attr("content");
             System.out.println(keywords + " \n\n");
 
             Elements links = document.select("a[href]");
+            Elements resultLinks = document.select("h3.r > a");
+            resultLinks.forEach((resultLink) -> {
+                System.out.println(resultLink + "\n\n'n");
+            });
+
+            System.out.println("Image with src ending with .png" + "\n\n\n");
+            Elements pngs = document.select("img[src$=.png]");
+            System.out.println(pngs + "\n\n'n");
+
+            System.out.println("Read the OuterHTML data..." + "\n\n'n");
+            String outerHtml = links.outerHtml();
+            System.out.println(outerHtml + "\n\n'n");
+
+            System.out.println("Read the InnerHTML data..." + "\n\n'n");
+            String innerHtml = links.html();
+            System.out.println(innerHtml + "\n\n'n");
 
             System.out.println("Parse all Web-Links");
             links.stream().map((link) -> {
-                System.out.println("link : " + link.attr("href"));
+                System.out.println("Absolute URL link : " + link.attr("abs:href"));
                 return link;
             }).forEachOrdered((link) -> {
-                System.out.println("text : " + link.text());
+                System.out.println("Text : " + link.text());
             });
 
             System.out.println("\n\n");
-            System.out.println("..........Get Domain......Performing Google Search...........");
-//            Elements domain = document.select("a[href]");
-//            Set<String> result = new HashSet<>();
-//            System.out.println("All Web Links");
-//            for (Element link : domain) {
-//                String attr1 = link.attr("href");
-//                String attr2 = link.attr("class");
-//
-//                if (!attr2.startsWith("_Zkb") && attr1.startsWith("/url?q=")) {
-//                    result.add(getDomainName(attr1));
-//                }
-//                result.forEach((string) -> {
-//                    System.out.println(string);
-//                });
-//            }
+            Elements domain = document.select("a[href]");
+            domain.stream().map((Element link) -> {
+                String attr1 = link.attr("href");
+                System.out.println(attr1);
+                return link;
+            }).map((link) -> link.attr("class")).forEachOrdered(System.out::println);
 
-            System.out.println("\n\n");
+            System.out.println("\n\n\n\n");
             Elements images = document.select("img[src~=(?i)\\.(png|jpe?g|gif)]");
             images.stream().map((image) -> {
                 System.out.println("\nsrc : " + image.attr("src"));
